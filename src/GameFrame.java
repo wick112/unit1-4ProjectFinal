@@ -2,8 +2,8 @@ import javax.swing.JFrame;
 
 public class GameFrame extends JFrame{
 
-    GameFrame() {
-        GamePanel panel = new GamePanel();
+    GameFrame(int initialDelay) {
+        GamePanel panel = new GamePanel(170);
         this.add(panel);
         this.setTitle("SNAKE GAME");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -9,17 +9,17 @@ public class GamePanel extends JPanel implements ActionListener{
     int SCREEN_HEIGHT = 800;
     int UNIT_SIZE = 50;
     int GAME_UNITS = (SCREEN_WIDTH*SCREEN_HEIGHT)/(UNIT_SIZE*UNIT_SIZE);
-    int delay = 170;
+    int delay;
 
 
     //snake parts
-    final int x[] = new int[GAME_UNITS];
-    final int y[] = new int[GAME_UNITS];
+    final int[] x = new int[GAME_UNITS];
+    final int[] y = new int[GAME_UNITS];
     int bodyParts = 3;
     boolean running = false;
 
     //fruit parts
-    int fruitsEaten, fruitsXCoord, fruitsYCoord;
+    int fruitsEaten;
 
     char direction = 'R';
     Timer timer;
@@ -28,9 +28,11 @@ public class GamePanel extends JPanel implements ActionListener{
     boolean gameOver = false;
     AdditionalGameFeatures obj = new AdditionalGameFeatures();
     private String name = obj.userName();
-    GamePanel(){
-        random = new Random();
+    Fruit fruit = new Fruit(800, 800, 50);
 
+    GamePanel(int delay){
+        this.delay = delay;
+        random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH,SCREEN_HEIGHT));
         this.setBackground(Color.black);
         this.setFocusable(true);
@@ -38,7 +40,6 @@ public class GamePanel extends JPanel implements ActionListener{
         startGame();
     }
     public void startGame() {
-        newFruit();
         running = true;
         timer = new Timer(delay,this);
         timer.start();
@@ -48,7 +49,6 @@ public class GamePanel extends JPanel implements ActionListener{
         draw(g);
     }
     public void draw(Graphics g) {
-
         if(running) {
             for (int i = 0; i < SCREEN_HEIGHT / UNIT_SIZE; i++) {
                 for (int j = 0; j < SCREEN_WIDTH / UNIT_SIZE; j++) {
@@ -57,7 +57,7 @@ public class GamePanel extends JPanel implements ActionListener{
                 }
             }
             g.setColor(Color.red);
-            g.fillOval(fruitsXCoord, fruitsYCoord, UNIT_SIZE, UNIT_SIZE);
+            fruit.draw(g);
 
             for(int i = 0; i < bodyParts;i++) {
                 if(i == 0) {
@@ -81,10 +81,7 @@ public class GamePanel extends JPanel implements ActionListener{
         }
 
     }
-    public void newFruit(){
-        fruitsXCoord = random.nextInt((int)(SCREEN_WIDTH/UNIT_SIZE))*UNIT_SIZE;
-        fruitsYCoord = random.nextInt((int)(SCREEN_HEIGHT/UNIT_SIZE))*UNIT_SIZE;
-    }
+
     public void moveSnake(){
         for(int i = bodyParts;i>0;i--) {
             x[i] = x[i-1];
@@ -105,13 +102,12 @@ public class GamePanel extends JPanel implements ActionListener{
                 x[0] = x[0] + UNIT_SIZE;
                 break;
         }
-
     }
     public void checkFruit() {
-        if((x[0] == fruitsXCoord) && (y[0] == fruitsYCoord)) {
-            bodyParts++;
+        boolean z = fruit.checkFruitCollision(x, y, bodyParts);
+        if (z == true){
+            bodyParts ++;
             fruitsEaten++;
-            newFruit();
         }
     }
     public void checkCollisions() {
@@ -144,7 +140,6 @@ public class GamePanel extends JPanel implements ActionListener{
     }
     public void gameOver(Graphics g) {
         //Score
-
         g.setColor(Color.red);
         g.setFont( new Font("Onyx",Font.BOLD, 50));
         FontMetrics metrics1 = getFontMetrics(g.getFont());
@@ -163,7 +158,6 @@ public class GamePanel extends JPanel implements ActionListener{
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-
         if(running) {
             moveSnake();
             checkFruit();
@@ -206,5 +200,3 @@ public class GamePanel extends JPanel implements ActionListener{
         }
     }
 }
-
-
