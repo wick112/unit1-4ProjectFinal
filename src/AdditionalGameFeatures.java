@@ -9,4 +9,10 @@ public class AdditionalGameFeatures {
         String userName = scan.nextLine();
         return userName;
     }
+    public String getFirstInitial(String userName){
+        return (userName.substring(0, 1).toUpperCase());
+    }
+
+
+
 }

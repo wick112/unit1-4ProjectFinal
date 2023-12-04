@@ -4,17 +4,15 @@ import javax.swing.*;
 import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener{
-
-    int SCREEN_WIDTH = 800;
-    int SCREEN_HEIGHT = 800;
-    int UNIT_SIZE = 50;
-    int GAME_UNITS = (SCREEN_WIDTH*SCREEN_HEIGHT)/(UNIT_SIZE*UNIT_SIZE);
+    int screenWidth = 800;
+    int screenHeight = 800;
+    int unitSize = 50;
+    int gameUnits = (screenWidth * screenHeight)/(unitSize * unitSize);
     int delay;
 
-
     //snake parts
-    final int[] x = new int[GAME_UNITS];
-    final int[] y = new int[GAME_UNITS];
+    final int[] x = new int[gameUnits];
+    final int[] y = new int[gameUnits];
     int bodyParts = 3;
     boolean running = false;
 
@@ -26,14 +24,17 @@ public class GamePanel extends JPanel implements ActionListener{
     Random random;
     boolean playAgain = false;
     boolean gameOver = false;
+    //Accesses objects from other 2 classes
     AdditionalGameFeatures obj = new AdditionalGameFeatures();
     private String name = obj.userName();
-    Fruit fruit = new Fruit(800, 800, 50);
+    private String restOfName = name.substring(name.length() - (name.length() - 1));
+    private String firstIn = obj.getFirstInitial(name);
+    Fruit fruit = new Fruit(800, 800, 50, 50, 50);
 
     GamePanel(int delay){
         this.delay = delay;
         random = new Random();
-        this.setPreferredSize(new Dimension(SCREEN_WIDTH,SCREEN_HEIGHT));
+        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.black);
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
@@ -43,6 +44,7 @@ public class GamePanel extends JPanel implements ActionListener{
         running = true;
         timer = new Timer(delay,this);
         timer.start();
+        fruit.spawnFruit();
     }
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -50,29 +52,32 @@ public class GamePanel extends JPanel implements ActionListener{
     }
     public void draw(Graphics g) {
         if(running) {
-            for (int i = 0; i < SCREEN_HEIGHT / UNIT_SIZE; i++) {
-                for (int j = 0; j < SCREEN_WIDTH / UNIT_SIZE; j++) {
-                    g.drawLine(j * UNIT_SIZE, 0, j * UNIT_SIZE, SCREEN_HEIGHT);
-                    g.drawLine(0, i * UNIT_SIZE, SCREEN_WIDTH, i * UNIT_SIZE);
+            //Draws grid lines onto the screen
+            for (int i = 0; i < screenHeight / unitSize; i++) {
+                for (int j = 0; j < screenWidth / unitSize; j++) {
+                    g.drawLine(j * unitSize, 0, j * unitSize, screenHeight);
+                    g.drawLine(0, i * unitSize, screenWidth, i * unitSize);
                 }
             }
-            g.setColor(Color.red);
-            fruit.draw(g);
 
+            g.setColor(Color.white);
+            fruit.draw(g);
+            //Sets the head of the snake as green and randomizes the color of each body part every second
             for(int i = 0; i < bodyParts;i++) {
                 if(i == 0) {
                     g.setColor(Color.green);
-                    g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                    g.fillRect(x[i], y[i], unitSize, unitSize);
                 }
                 else {
                     g.setColor(new Color(((int)(Math.random() * 255) + 1),((int)(Math.random() * 255) + 1),((int)(Math.random() * 255) + 1)));
-                    g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                    g.fillRect(x[i], y[i], unitSize, unitSize);
                 }
             }
             g.setColor(Color.white);
+            //Displays user name and score onto the playing screen
             g.setFont( new Font("Ink Free",Font.BOLD, 40));
             FontMetrics metrics = getFontMetrics(g.getFont());
-            g.drawString(name + "'s Score: "+ fruitsEaten, (SCREEN_WIDTH - metrics.stringWidth(name + "'s Score: " + fruitsEaten))/2, g.getFont().getSize());
+            g.drawString(firstIn + restOfName + "'s Score: " + "\n" + getFruitsEaten(), (screenWidth - metrics.stringWidth(firstIn + restOfName + "'s Score: " + getFruitsEaten()))/2, g.getFont().getSize());
 
         }
         else if (!running) {
@@ -83,23 +88,25 @@ public class GamePanel extends JPanel implements ActionListener{
     }
 
     public void moveSnake(){
-        for(int i = bodyParts;i>0;i--) {
-            x[i] = x[i-1];
-            y[i] = y[i-1];
+        int i = bodyParts;
+        while (i > 0) {
+            x[i] = x[i - 1];
+            y[i] = y[i - 1];
+            i--;
         }
 
         switch(direction) {
             case 'U':
-                y[0] = y[0] - UNIT_SIZE;
+                y[0] = y[0] - unitSize;
                 break;
             case 'D':
-                y[0] = y[0] + UNIT_SIZE;
+                y[0] = y[0] + unitSize;
                 break;
             case 'L':
-                x[0] = x[0] - UNIT_SIZE;
+                x[0] = x[0] - unitSize;
                 break;
             case 'R':
-                x[0] = x[0] + UNIT_SIZE;
+                x[0] = x[0] + unitSize;
                 break;
         }
     }
@@ -122,7 +129,7 @@ public class GamePanel extends JPanel implements ActionListener{
             running = false;
         }
         //check if head touches right border
-        if(x[0] > SCREEN_WIDTH) {
+        if(x[0] > screenWidth) {
             running = false;
         }
         //check if head touches top border
@@ -130,7 +137,7 @@ public class GamePanel extends JPanel implements ActionListener{
             running = false;
         }
         //check if head touches bottom border
-        if(y[0] > SCREEN_HEIGHT) {
+        if(y[0] > screenHeight) {
             running = false;
         }
 
@@ -138,22 +145,22 @@ public class GamePanel extends JPanel implements ActionListener{
             timer.stop();
         }
     }
-    public void gameOver(Graphics g) {
+    private void gameOver(Graphics g) {
         //Score
         g.setColor(Color.red);
         g.setFont( new Font("Onyx",Font.BOLD, 50));
         FontMetrics metrics1 = getFontMetrics(g.getFont());
-        g.drawString(name + "'s Score: "+ fruitsEaten, (SCREEN_WIDTH - metrics1.stringWidth(name + "'s Score: "+ fruitsEaten))/2, g.getFont().getSize());
+        g.drawString(firstIn + restOfName + "'s Score: "+ getFruitsEaten(), (screenWidth - metrics1.stringWidth(firstIn + restOfName + "'s Score: "+ getFruitsEaten()))/2, g.getFont().getSize());
         //Game Over text
         g.setColor(Color.red);
         g.setFont( new Font("Bauhaus 93",Font.BOLD, 75));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("GAME  OVER", (SCREEN_WIDTH - metrics2.stringWidth("Game Over"))/2, SCREEN_HEIGHT/2);
+        g.drawString("GAME  OVER", (screenWidth - metrics2.stringWidth("Game Over"))/2, screenHeight /2);
         //Replay text
         g.setColor(Color.red);
         g.setFont( new Font("Bauhaus 93",Font.BOLD, 65));
         FontMetrics metrics3 = getFontMetrics(g.getFont());
-        g.drawString("Press Enter to Play Again", (SCREEN_WIDTH - metrics3.stringWidth("Press Enter to Play Again"))/2, SCREEN_HEIGHT/3);
+        g.drawString("Thanks for Playing", (screenWidth - metrics3.stringWidth("Thanks for Playing"))/2, screenHeight /3);
 
     }
     @Override
@@ -162,7 +169,7 @@ public class GamePanel extends JPanel implements ActionListener{
             moveSnake();
             checkFruit();
             checkCollisions();
-            if (delay > 100 && fruitsEaten > 0 && fruitsEaten % 7 == 0){
+            if (delay > 100 && getFruitsEaten() > 0 && getFruitsEaten() % 7 == 0){
                 delay -= 3;
                 timer.stop();
                 timer = new Timer(delay,this);
@@ -174,6 +181,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
     public class MyKeyAdapter extends KeyAdapter{
         @Override
+        //Checks which WASD Key is pressed; only one key is pressed at a time to limit snake turning to 90 degrees
         public void keyPressed(KeyEvent e) {
             switch(e.getKeyCode()) {
                 case KeyEvent.VK_A:
@@ -198,5 +206,9 @@ public class GamePanel extends JPanel implements ActionListener{
                     break;
             }
         }
+    }
+    //private helper method
+    private int getFruitsEaten(){
+        return fruitsEaten;
     }
 }

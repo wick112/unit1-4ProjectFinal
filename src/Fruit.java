@@ -14,6 +14,13 @@ public class Fruit {
         spawnFruit();
     }
 
+    //Overloaded method with initial x and y coordinate for the fruit
+    public Fruit(int screenWidth, int screenHeight, int unitSize, int initialX, int initialY) {
+        this(screenWidth, screenHeight, unitSize);
+        this.xCoord = initialX;
+        this.yCoord = initialY;
+    }
+
     public void spawnFruit() {
         xCoord = random.nextInt((int) (screenWidth / unitSize)) * unitSize;
         yCoord = random.nextInt((int) (screenHeight / unitSize)) * unitSize;
